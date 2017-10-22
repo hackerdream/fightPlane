@@ -117,8 +117,7 @@
 
     <script type="text/javascript">
         (function () {
-            var box = document.getElementById('box'),
-                num = 0;
+            var box = document.getElementById('box');
 
             init();
             //初始化开始洁面
@@ -245,8 +244,10 @@
                     Enemy.width = 23;
                     Enemy.height = 30;
                     Enemy.style.top = 0;
-                    Enemy.style.left = Math.random() * box.clientWidth - Enemy.width + 'px';
-                    Enemy.style.left = Math.min(300, Enemy.style.left);
+                    left = Math.random() * box.clientWidth - Enemy.width;
+                    left = Math.min(300, left);
+                    left= Math.max(0,left);
+                    Enemy.style.left = left +'px';
                     box.appendChild(Enemy);
                     var speed = Math.random() * 5 + 2;
 
@@ -262,8 +263,8 @@
                         } else {
                             for (var i = 0; i < bullet.length; i++) {
                                 if (isCollition(Enemy, bullet[i])) { //判断子弹是否和敌机碰撞
-                                    num++;
-                                    count.innerHTML = "得分: " + num * 5;
+                                    box.score++;
+                                    count.innerHTML = "得分: " + box.score * 5;
 
                                     createBoom(Enemy, '');
 
@@ -332,7 +333,7 @@
                 Div1.onclick = init;
 
                 Div.appendChild(h1);
-                Div.innerHTML += "<p>最终得分：" + num * 5+ "</p>";
+                Div.innerHTML += "<p>最终得分：" + box.score * 5+ "</p>";
                 Div.appendChild(Div1);
                 box.appendChild(Div);
             }
@@ -340,7 +341,8 @@
             function score() {
 
                 var count = document.createElement('div');
-                count.innerHTML = '得分：' + num * 5;
+                box.score = 0;
+                count.innerHTML = '得分：' + box.score ;
                 count.className = 'count';
 
                 box.appendChild(count);
