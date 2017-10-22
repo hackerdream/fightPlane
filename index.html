@@ -288,7 +288,7 @@
                                 box.removeChild(plane);
                                 box.removeChild(Enemy);
                                 //跳到结束界面
-                                setTimeout(finish, 200)
+                                setTimeout(finish, 1000)
 
                                 return;
                             }
@@ -302,7 +302,7 @@
             //生成爆炸图片
 
             function createBoom(obj, str) {
-                var boom = new Image;
+                var boom = document.createElement('img');
 
                 boom.src = 'img/boom' + str + '.png';
                 boom.className = 'boom';
@@ -315,7 +315,7 @@
 
                 setTimeout(function () {
                     box.removeChild(boom);
-                }, 200);
+                }, 100);
 
             }
             //生成结束界面;
