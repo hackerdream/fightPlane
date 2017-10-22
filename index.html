@@ -245,7 +245,7 @@
                     Enemy.width = 23;
                     Enemy.height = 30;
                     Enemy.style.top = 0;
-                    Enemy.style.left = Math.random() * box.clientWidth - Enemy.style.width / 2 + 'px';
+                    Enemy.style.left = Math.random() * box.clientWidth - Enemy.width + 'px';
                     Enemy.style.left = Math.min(300, Enemy.style.left);
                     box.appendChild(Enemy);
                     var speed = Math.random() * 5 + 2;
