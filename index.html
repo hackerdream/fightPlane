@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en" onselectstart="return false">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>打飞机</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #000;
+        }
+
+        #fly {
+            width: 300px;
+            height: 500px;
+            border: 10px solid #ccc;
+            margin: 40px auto;
+        }
+
+        #box {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #box h1 {
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        #box .pattern {
+            width: 150px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            background: #fff;
+            margin: 55px auto;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #box .last {
+            background: skyblue;
+            color: red;
+            font-size: 16px;
+            font-weight: 600px;
+        }
+
+        #box .plane,
+        #box .bullet,
+        #box .enemy,
+        #box .boom,
+        #box .count {
+            position: absolute;
+        }
+
+        #box .count {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            text-align: left;
+            line-height: 20px;
+            background: rgba(0, 0, 0, .4);
+            color: #fff;
+        }
+
+        #box .finish {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 400px;
+            background: #fff;
+        }
+        #box .title{
+            text-align: center;
+            padding-top:30px;
+            color:#000;
+        }
+        #box .continue{
+            position: absolute;
+            bottom:20px;
+            left: 50%;
+            width:100px;
+            height: 30px;
+            margin-left:-50px;
+            background: #000;
+            color:red;
+            text-align: center;
+            line-height:30px;
+            font-weight: bold;
+            cursor: pointer;
+
+        }
+        #box p{
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="fly">
+        <div id="box">
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var box = document.getElementById('box'),
+                num = 0;
+
+            init();
+            //初始化开始洁面
+            function init() {
+                box.innerHTML = "";
+                var H1 = document.createElement('h1'),
+                    name = ['简单', '一般', '困难', '神之审判'];
+
+                H1.innerHTML = '一起来打飞机';
+                box.appendChild(H1);
+
+                for (var i = 0; i < 4; i++) {
+                    var Div = document.createElement('div');
+
+                    Div.innerHTML = name[i];
+                    Div.className = i === 3 ? 'pattern last' : 'pattern';
+                    Div.i = i;
+
+                    Div.onclick = function (e) {
+                        start(this.i, e);
+                    }
+
+                    box.appendChild(Div);
+                }
+            }
+
+            //开始
+            function start(index, e) {
+                box.innerHTML = "";
+
+                score();
+
+                enemy(index, myself(index, e));
+
+            }
+
+            //生成我军飞机
+            function myself(index, e) {
+                var plane = document.createElement('img');
+                //or you can use var plane = new Image();
+
+                plane.src = 'img/plane.png';
+                plane.width = 60;
+                plane.height = 36;
+                plane.className = 'plane';
+                plane.style.top = e.pageY - getOffset(box).top - plane.height / 2 + 'px';
+                plane.style.left = e.pageX - getOffset(box).left - plane.width / 2 + 'px';
+
+                box.appendChild(plane);
+
+                //活动的范围
+                var maxTop = box.clientHeight - plane.height,
+                    minTop = 0,
+                    maxLeft = box.clientWidth - plane.width / 2;
+                minLeft = 0 - plane.width / 2;
+
+                //飞机跟着移动定位
+                document.onmousemove = function (e) {
+                    var top = e.clientY - getOffset(box).top - plane.height / 2,
+                        left = e.clientX - getOffset(box).left - plane.width / 2;
+
+                    top = Math.min(maxTop, top);
+                    top = Math.max(minTop, top);
+                    left = Math.min(maxLeft, left);
+                    left = Math.max(minLeft, left);
+                    plane.style.top = top + 'px';
+                    plane.style.left = left + 'px';
+
+                }
+                //生成子弹 ;
+                // var Bullet = document.createElement('img');
+
+                // Bullet.src = 'img/bullet.png';
+                // Bullet.className = 'bullet';
+                // Bullet.width = 6;
+                // Bullet.height = 22;
+                // Bullet.style.top = plane.offsetTop - Bullet.height + 'px';
+                // Bullet.style.left = plane.offsetLeft + plane.width / 2 - Bullet.width / 2 + 'px';
+
+                // box.appendChild(Bullet);
+
+                //生成多个子弹
+                var speed = [100, 200, 300, 20];
+                plane.bulletAdd = setInterval(function () {
+                    var Bullet = document.createElement('img');
+
+                    Bullet.src = 'img/bullet.png';
+                    Bullet.className = 'bullet';
+                    Bullet.width = 6;
+                    Bullet.height = 22;
+                    Bullet.style.top = plane.offsetTop - Bullet.height + 'px';
+                    Bullet.style.left = plane.offsetLeft + plane.width / 2 - Bullet.width / 2 +
+                        'px';
+
+                    box.appendChild(Bullet);
+
+                    //子弹运动
+                    run();
+
+                    function run() {
+                        Bullet.style.top = Bullet.offsetTop - 12 + 'px';
+                        if (Bullet.offsetTop <= -Bullet.height / 2) {
+                            box.removeChild(Bullet);
+                        } else {
+                            Bullet.parentNode && requestAnimationFrame(run);
+                        }
+                    }
+                }, speed[index]);
+
+                return plane;
+            }
+
+            //生成敌军
+            function enemy(index, plane) {
+                enemySpeed = [300, 200, 100, 50];
+
+                var enemySet = setInterval(function () {
+
+                    var Enemy = document.createElement('img'),
+                        count = document.getElementsByClassName('count')[0];
+
+                    Enemy.src = 'img/enemy.png';
+                    Enemy.className = 'enemy';
+                    Enemy.width = 23;
+                    Enemy.height = 30;
+                    Enemy.style.top = 0;
+                    Enemy.style.left = Math.random() * box.clientWidth - Enemy.style.width / 2 + 'px';
+                    Enemy.style.left = Math.min(300, Enemy.style.left);
+                    box.appendChild(Enemy);
+                    var speed = Math.random() * 5 + 2;
+
+                    down();
+
+                    function down() {
+                        var bullet = document.getElementsByClassName('bullet');
+
+                        Enemy.style.top = Enemy.offsetTop + speed + 'px';
+
+                        if (Enemy.offsetTop >= box.offsetHeight - Enemy.height) {
+                            box.removeChild(Enemy);
+                        } else {
+                            for (var i = 0; i < bullet.length; i++) {
+                                if (isCollition(Enemy, bullet[i])) { //判断子弹是否和敌机碰撞
+                                    num++;
+                                    count.innerHTML = "得分: " + num * 5;
+
+                                    createBoom(Enemy, '');
+
+                                    box.removeChild(bullet[i]);
+                                    box.removeChild(Enemy);
+
+                                    return;
+                                }
+                            }
+                            var my_plane = document.getElementsByClassName("plane")[0];
+                            if (plane.parentNode && isCollition(Enemy, plane)) { //可能同时碰撞两个执行两次
+                                //清除定时器
+                                clearInterval(my_plane.bulletAdd);
+                                clearInterval(enemySet);
+
+                                //控制飞机的移动事件也不需要了
+                                document.onmousemove = null;
+                                //创建boom的图片
+                                createBoom(my_plane, '2');
+                                createBoom(Enemy, '');
+                                //移除两个爆炸的飞机
+                                box.removeChild(plane);
+                                box.removeChild(Enemy);
+                                //跳到结束界面
+                                setTimeout(finish, 200)
+
+                                return;
+                            }
+                            Enemy.parentNode && requestAnimationFrame(down);
+                        }
+                    }
+                }, enemySpeed[index]);
+            }
+
+
+            //生成爆炸图片
+
+            function createBoom(obj, str) {
+                var boom = new Image;
+
+                boom.src = 'img/boom' + str + '.png';
+                boom.className = 'boom';
+                boom.width = obj.width;
+                boom.height = obj.height;
+                boom.style.top = obj.offsetTop + 'px';
+                boom.style.left = obj.offsetLeft + 'px';
+
+                box.appendChild(boom);
+
+                setTimeout(function () {
+                    box.removeChild(boom);
+                }, 200);
+
+            }
+            //生成结束界面;
+            function finish() {
+                box.innerHTML = "";
+                var Div = document.createElement('div');
+                Div.className = 'finish';
+                var h1 = document.createElement('h1');
+                h1.innerHTML = "你输了";
+                h1.className = 'title';
+                var Div1 = document.createElement("div");
+                Div1.className = "continue";
+                Div1.innerHTML = "不服，再战";
+                Div1.onclick = init;
+
+                Div.appendChild(h1);
+                Div.innerHTML += "<p>最终得分：" + num * 5+ "</p>";
+                Div.appendChild(Div1);
+                box.appendChild(Div);
+            }
+
+            function score() {
+
+                var count = document.createElement('div');
+                count.innerHTML = '得分：' + num * 5;
+                count.className = 'count';
+
+                box.appendChild(count);
+            }
+        })()
+        //获取距离定位的上边距
+        function getOffset(obj) {
+            var position = {
+                top: 0,
+                left: 0
+            }
+            while (obj !== document.body) {
+                position.top += obj.offsetTop;
+                position.left += obj.offsetLeft;
+                obj = obj.offsetParent;
+            }
+            return position;
+        }
+
+        //检测是否碰撞
+
+        function isCollition(obj1, obj2) { //obj1 为敌机，obj2 为我方
+            var l1 = obj1.offsetLeft,
+                l2 = obj2.offsetLeft,
+                t1 = obj1.offsetTop,
+                t2 = obj2.offsetTop,
+                r1 = l1 + obj1.offsetWidth,
+                r2 = l2 + obj2.offsetWidth,
+                b1 = t1 + obj1.offsetHeight,
+                b2 = t2 + obj2.offsetHeight;
+            return !(l1 > r2 || t1 > b2 || r1 < l2 || b1 < t2);
+            // if (l1 > r2 || t1 > b2 || r1 < l2 || b1 < t2) {
+            //     //没有碰到的
+            //     return false;
+            // } else {
+            //     //碰到了
+            //     return true;
+            // }
+        }
+    </script>
+
+</body>
+
+</html>
